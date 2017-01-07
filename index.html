@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Drunk Souls</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+      body {
+      	background: url('bg.jpg');
+      	background-size: cover;
+      	padding: 0px;
+      	margin: 0px;
+      	font-family: Georgia;
+      	height: 100vh;
+      	color: white;
+      	font-size: 40px;
+      	display: flex;
+      	flex-direction: row;
+      	align-items: center;
+      	justify-content: center;
+      	overflow: hidden;
+      	-webkit-user-select: none;
+      }
+      .wrapper {
+      	background: url('panel.png');
+      	background-size: contain;
+      	background-repeat: no-repeat;
+      	background-color: rgba(0,0,0,0.6);
+      	width: 900px;
+      	height: calc(900 * 0.722px);
+      	margin-top: 110px;
+      	display: flex;
+      	flex-direction: row;
+      	box-shadow: 0px 0px 39px 9px rgba(0,0,0,0.75);
+      }
+      .logo {
+      	top: 70px;
+      	position: fixed;
+      	width: 800px;
+      }
+      .timer {
+      	color: rgba(255,255,255, 0.8);
+      	font-family: 'Courier New';
+      	width: 450px;
+      	font-size: 30px;
+      	box-sizing: border-box;
+      	padding: 100px 100px 100px 50px;
+      	text-shadow: 1px 1px 10px #000000;
+      }
+      .timer i {
+      	display: inline-block;
+      	margin: 110px auto 0 0;
+      	font-size: 99px;
+      	font-style: normal;
+      }
+      #test {
+      	width: 70px;
+      	height: 70px;
+      	background: none;
+      	color: red;
+      	border: none;
+      	opacity: 0;
+      	position: fixed;
+      	bottom: 0;
+      	right: 0;
+      	cursor: pointer;
+      }
+      #test:hover {
+      	opacity: 1;
+      }
+      #minutes {
+      	display: inline;
+      	font-weight: bold;
+      	font-size: 45px;
+      	float: right;
+      	margin: 0px;
+      }
+      .commands {
+      	position: relative;
+      }
+      #play {
+      	cursor: pointer;
+      	padding: 10px;
+      }
+      #pause {
+      	cursor: pointer;
+      	padding: 10px;
+      	position: absolute;
+      	left: 0;
+      	visibility: hidden;
+      }
+      #reset {
+      	cursor: pointer;
+      	padding: 10px;
+      }
+      #plus {
+      	float: right;
+      	margin-left: 20px;
+      	cursor: pointer;
+      	padding: 10px;
+      }
+      #minus {
+      	float: right;
+      	margin-right: 20px;
+      	cursor: pointer;
+      	padding: 10px;
+      }
+      .rules {
+      	width: 450px;
+      	padding: 100px 50px 100px 100px;
+      	box-sizing: border-box;
+      	text-shadow: 1px 1px 10px #000000;
+      }
+      .rules h1 {
+      	font-size: 43px;
+      	font-weight: normal;
+      	margin: 0px;
+      	margin-top: 58px;
+      	margin-bottom: 20px;
+      	opacity: 0.8;
+      }
+      .rules p {
+      	font-size: 18px;
+      	margin: 15px 0;
+      	opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body><img src="logo.png" class="logo">
+    <div id="test" class="fa fa-file-audio-o"></div>
+    <div class="wrapper">
+      <div class="rules">
+        <h1>When to drink</h1>
+        <p>1 drink on death</p>
+        <p>2 drinks on gravity death</p>
+        <p>2 drinks on losing blood stain</p>
+        <p>2 drinks on dropping controller</p>
+        <p>If there is a death within 5 seconds of a hand off BOTH players drink</p>
+        <p>If boss is killed everyone else drinks</p>
+      </div>
+      <div class="timer"><i id="display-minutes">00</i><i>:</i><i id="display-seconds">00</i>
+        <div class="commands">
+          <div id="play" class="fa fa-play"></div>
+          <div id="pause" class="fa fa-pause"></div>
+          <div id="reset" class="fa fa-stop"></div>
+          <div id="plus" class="fa fa-plus"></div>
+          <p id="minutes">2</p>
+          <div id="minus" class="fa fa-minus"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function timer() {
+      	var displayMinutes = document.getElementById('display-minutes');
+      	var displaySeconds = document.getElementById('display-seconds');
+      	var minuteAmt = document.getElementById('minutes');
+      	var playBtn = document.getElementById('play');
+      	var pauseBtn = document.getElementById('pause');
+      	var resetBtn = document.getElementById('reset');
+      	var minusBtn = document.getElementById('minus');
+      	var plusBtn = document.getElementById('plus');
+      	var testBtn = document.getElementById('test');
+      	var sound3 = new Audio('3.mp3');
+      	var sound2 = new Audio('2.mp3');
+      	var sound1 = new Audio('1.mp3');
+      	var soundSwitch = new Audio('switch.mp3');
+      
+      	var timeInterval;
+      	var paused = false;
+      
+      	var time = {};
+      	time.duration = 2;
+      	time.minutes = 0;
+      	time.seconds = 0;
+      
+      	function incrementMinutes() {
+      		if(time.duration === 99) {
+      			time.duration = 0;
+      		}
+      		time.duration++;
+      		minuteAmt.innerHTML = time.duration;
+      	}
+      
+      	function decrementMinutes() {
+      		if(time.duration === 1) {
+      			time.duration = 100;
+      		}
+      		time.duration--;
+      		minuteAmt.innerHTML = time.duration;
+      	}
+      	
+      	function play() {
+      		if(!paused) {
+      			time.minutes = time.duration;
+      		} else {
+      			paused = false;
+      		}
+      		playBtn.style.visibility = 'hidden';
+      		pauseBtn.style.visibility = 'visible';
+      		timeInterval = window.setInterval(function() { updateTime(time.minutes, time.seconds); }, 1000);
+      	}
+      	
+      	function reset() {
+      		clearInterval(timeInterval);
+      		time.minutes = time.duration;
+      		displayMinutes.innerHTML = '00';
+      		time.seconds = 0;
+      		displaySeconds.innerHTML = '00';
+      		playBtn.style.visibility = 'visible';
+      		pauseBtn.style.visibility = 'hidden';		
+      	}
+      
+      	function pause() {
+      		clearInterval(timeInterval);
+      		playBtn.style.visibility = 'visible';
+      		pauseBtn.style.visibility = 'hidden';
+      		paused = true;		
+      	}
+      
+      	function updateTime(minutes, seconds) {
+      		if(minutes === 0 && seconds === 4) {
+      			countdown();
+      		}
+      		if(minutes === 0 && seconds === 1) {
+      			time.minutes = time.duration;
+      			displayMinutes.innerHTML = addLeadingZero(time.minutes);
+      			time.seconds = 0;
+      			displaySeconds.innerHTML = addLeadingZero(time.seconds);
+      		} else {
+      			if(seconds === 0) {
+      				time.minutes--;
+      				displayMinutes.innerHTML = addLeadingZero(time.minutes);
+      				time.seconds = 60;
+      				displaySeconds.innerHTML = time.seconds;
+      			}
+      			time.seconds--;
+      			displaySeconds.innerHTML = addLeadingZero(time.seconds);
+      		}
+      	}
+      
+      	function countdown() {
+      		sound3.play();
+      		setTimeout(function() { sound2.play(); }, 1000);
+      		setTimeout(function() { sound1.play(); }, 2000);
+      		setTimeout(function() { soundSwitch.play(); }, 3000);
+      	}
+      
+      	function addLeadingZero(number) {
+      		if(number < 10) {
+      			return '0' + number;
+      		} else {
+      			return number;
+      		}
+      	}
+      
+      	playBtn.addEventListener('click', play);
+      	pauseBtn.addEventListener('click', pause);
+      	resetBtn.addEventListener('click', reset);
+      	plusBtn.addEventListener('click', incrementMinutes);
+      	minusBtn.addEventListener('click', decrementMinutes);
+      	testBtn.addEventListener('click', countdown);
+      
+      }
+      
+      timer();
+    </script>
+  </body>
+</html>
